@@ -4,30 +4,37 @@ from dotenv import load_dotenv
 import os 
 
 
-load_dotenv() # charger les variables depuis .env
+class DataLoader:
+    def __init__(self):
+        load_dotenv()  # load .env variables
 
-child_deaths_url = os.getenv("child_deaths_url")
-vaccine_coverage_url = os.getenv("vaccine_coverage_url")
-ihme_data_url = os.getenv("ihme_data_rl")
-immunization_schedule_url = os.getenv("immunization_schedule_url")
-averted_deaths_url = os.getenv("averted_deaths_url")
-careseeking_url = os.getenv("careseeking_url")
-final_dose_share_url = os.getenv("final_dose_share_url")
+        self.urls = {
+            "child_deaths": os.getenv("CHILD_DEATHS_URL"),
+            "vaccine_coverage": os.getenv("VACCINE_COVERAGE_URL"),
+            "ihme_data": os.getenv("IHME_DATA_RL"),
+            "immunization_schedule": os.getenv("IMMUNIZATION_SCHEDULE_URL"),
+            "averted_deaths": os.getenv("AVERTED_DEATHS_URL"),
+            "careseeking": os.getenv("CARESEEKING_URL"),
+            "final_dose_share": os.getenv("FINAL_DOSE_SHARE_URL"),
+        }
 
+        
+        self.dataframes = {}
 
-child_deaths_path = pooch.retrieve(url=child_deaths_url, known_hash=None)
-vaccine_coverage_path = pooch.retrieve(url=vaccine_coverage_url, known_hash=None)
-ihme_data_path = pooch.retrieve(url=ihme_data_url, known_hash=None)
-immunization_schedule_path = pooch.retrieve(url=immunization_schedule_url, known_hash=None)
-averted_deaths_path = pooch.retrieve(url=averted_deaths_url, known_hash=None)
-careseeking_path = pooch.retrieve(url=careseeking_url, known_hash=None)
-final_dose_share_path = pooch.retrieve(url=final_dose_share_url, known_hash=None)
+    def download_all(self):
+        for key, url in self.urls.items():
+            path = pooch.retrieve(url=url, known_hash=None)
+            self.dataframes[key] = pd.read_csv(path)
+        return self.dataframes
 
+# Usage
+downloader = DataLoader()
+dfs = downloader.download_all()
 
-df_child_deaths = pd.read_csv(child_deaths_path)
-df_vaccine_coverage = pd.read_csv(vaccine_coverage_path)
-df_ihme_data = pd.read_csv(ihme_data_path)
-df_immunization_schedule = pd.read_csv(immunization_schedule_path)
-df_averted_deaths = pd.read_csv(averted_deaths_path)
-df_careseeking = pd.read_csv(careseeking_path)
-df_final_dose_share = pd.read_csv(final_dose_share_path)
+df_child_deaths = dfs["child_deaths"]
+df_vaccine_coverage = dfs["vaccine_coverage"]
+df_ihme_data = dfs["ihme_data"]
+df_immunization_schedule = dfs["immunization_schedule"]
+df_averted_deaths = dfs["averted_deaths"]
+df_careseeking = dfs["careseeking"]
+df_final_dose_share = dfs["final_dose_share"]
